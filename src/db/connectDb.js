@@ -1,32 +1,34 @@
 const mongoose = require("mongoose");
-require("dotenv").config();
+require('dotenv').config()
 
 
 const getConnectionString = () => {
-    let connectionUrl;
+   
 
+    // let connectionURI = process.env.DATABASE_LOCAL
     
-        connectionUrl = process.env.DATABASE_LOCAL;
-        connectionUrl = connectionUrl.replace(
-            "<username>",
-            process.env.DATABASE_LOCAL_USERNAME
-        );
-        connectionUrl = connectionUrl.replace(
-            "<password>",
-            process.env.DATABASE_LOCAL_PASSWORD
-        );
+    // console.log(connectionURI);
+
+    //     connectionURI = connectionURI.replace(
+    //         '<username>',
+    //         process.env.DATABASE_LOCAL_USERNAME
+    //     );
+    //     connectionURI = connectionURI.replace(
+    //         '<password>',
+    //         process.env.DATABASE_LOCAL_PASSWORD
+    //     );
   
         
     
 
-    return connectionUrl;
+    // return connectionURI;
 };
 
 const connectDB = async () => {
     console.log("connectting to database");
-    const mongoURI = getConnectionString();
+    // const mongoURI = ''
 
-    await mongoose.connect(mongoURI, { dbName: process.env.DB_NAME });
+    await mongoose.connect("mongodb+srv://alviasad10:RhkaCzqZ3wQkwCkO@cluster0.mifmtux.mongodb.net/?retryWrites=true&w=majority", { dbName: "news-db" });
     console.log("connected to database");
 };
 

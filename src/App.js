@@ -1,6 +1,7 @@
 const express = require("express");
 const globalErrorHandler = require("./utils/globalErrorHandle");
 const applyMiddleware = require("./middlewares/applyMiddleware");
+const connectDB = require("./db/connectDb");
 
 require("dotenv").config();
 const app = express();
@@ -32,7 +33,13 @@ app.all("*", (req, res, next) => {
 app.use(globalErrorHandler);
 
 
+const main = async () => {
+    await connectDB()
+    app.listen(port, () => {
+        console.log(`Car Doctor Server is running on port ${port}`);
+    });
 
-app.listen(port, () => {
-    console.log(`app listening on ${port}`);
-})
+}
+
+
+main()
