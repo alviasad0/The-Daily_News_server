@@ -77,8 +77,6 @@ async function run() {
 
 
 
-
-
         /* update a single user  data */
 
         app.put('/users/:id', async (req, res) => {
@@ -102,6 +100,53 @@ async function run() {
             console.log(result);
             res.send(result);
         })
+
+
+        /* Subscribe user to premium content */
+        app.post('/subscribe', async (req, res) => {
+            const { userId, period } = req.body;
+
+            try {
+                const user = await userCollection.findOne({ _id: new ObjectId(userId) });
+
+                if (!user) {
+                    return res.status(404).json({ error: 'User not found' });
+                }
+
+                
+                const currentDate = new Date();
+                let subscriptionEndDate;
+
+                switch (period) {
+                    case '1min':
+                        subscriptionEndDate = new Date(currentDate.getTime() + 1 * 60 * 1000);
+                        break;
+                    case '5days':
+                        subscriptionEndDate = new Date(currentDate.getTime() + 5 * 24 * 60 * 60 * 1000);
+                        break;
+                    case '1week':
+                        subscriptionEndDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                        break;
+                    case '1month':
+                        subscriptionEndDate = new Date(currentDate);
+                        subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+                        break;
+                    default:
+                        return res.status(400).json({ error: 'Invalid subscription period' });
+                }
+
+                await userCollection.updateOne(
+                    { _id: new ObjectId(userId) },
+                    { $set: { premiumTaken: subscriptionEndDate } }
+                );
+
+                res.json({ message: 'Subscription successful' });
+            } catch (error) {
+                console.error('Error subscribing user', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
 
 
 
@@ -195,6 +240,10 @@ async function run() {
             }
         });
 
+
+
+
+        
         // ------------------ publishers releted apis -----------------
 
         /* read data for all Publishers */
