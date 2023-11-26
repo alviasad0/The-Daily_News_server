@@ -60,7 +60,9 @@ async function run() {
             const result = await userCollection.find().toArray();
             res.send(result);
         });
+        
 
+        /* sava new user data  */
         app.post('/users', async (req, res) => {
             const user = req.body;
             
@@ -72,6 +74,39 @@ async function run() {
             const result = await userCollection.insertOne(user);
             res.send(result);
         });
+
+
+
+
+
+        /* update a single user  data */
+
+        app.put('/users/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = {
+                _id: new ObjectId(id)
+            }
+            const newProduct = req.body
+            const options = {
+                upsert: true,
+            }
+            const updatedProfile = {
+                $set: {
+                    image_url: newProduct.image_url,
+                    name: newProduct.name,
+                    
+
+                }
+            }
+            const result = await userCollection.updateOne(filter, updatedProfile, options)
+            console.log(result);
+            res.send(result);
+        })
+
+
+
+
+
 
         // ------------------ articles releted apis -----------------
         
@@ -95,7 +130,7 @@ async function run() {
             res.send(result)
 
         })
-
+       /* update the total view in the articles */
         app.put('/allArticles/:id', async (req, res) => {
             const { id } = req.params;
 
@@ -115,12 +150,53 @@ async function run() {
                 res.status(500).json({ error: 'Internal server error' });
             }
         });
+
+
+         
+        /* premium articles apis  */
+        app.get('/premiumArticles', async (req, res) => {
+            try {
+                console.log('Fetching premium articles...');
+                const result = await ArticlesCollection.find({ premium: true }).toArray();
+
+                console.log('Fetched premium articles:', result);
+                res.send(result);
+            } catch (error) {
+                console.error('Error fetching premium articles', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
         
+    /*serch and filter articles */
+       
+        app.get('/searchArticles', async (req, res) => {
+            try {
+                const { offset = 0, limit = 10, searchTitle, publisher, tags } = req.query;
+                const filter = {};
 
+                if (searchTitle) {
+                    filter.title = { $regex: new RegExp(searchTitle, 'i') };
+                }
 
+                if (publisher) {
+                    filter.publisher = publisher;
+                }
+
+                if (tags) {
+                    filter.tags = { $in: tags.split(',') };
+                }
+
+                const result = await ArticlesCollection.find(filter).skip(+offset).limit(+limit).toArray();
+                res.send(result);
+            } catch (error) {
+                console.error('Error searching and filtering articles', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
 
         // ------------------ publishers releted apis -----------------
-        
+
         /* read data for all Publishers */
         app.get('/allPublishers', async (req, res) => {
             const result = await allPublishersCollection.find().toArray()
