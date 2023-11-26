@@ -1,7 +1,7 @@
 const express = require("express");
 const globalErrorHandler = require("./utils/globalErrorHandle");
 const applyMiddleware = require("./middlewares/applyMiddleware");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 
 
@@ -46,34 +46,95 @@ async function run() {
         /* create database and collection  */
         const ArticlesCollection = client.db("allArticlesDB").collection("allArticles")
 
-       
+        const allPublishersCollection = client.db("allPublishersDB").collection("allPublishers")
+        
+        const userCollection = client.db("allUsersDb").collection("allUsers");
+
+
+
+        // ----------------- users related api -----------------
+
+
+        /* read user data */
+        app.get('/users', async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        });
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            
+            const query = { email: user.email }
+            const existingUser = await userCollection.findOne(query);
+            if (existingUser) {
+                return res.send({ message: 'user already exists', insertedId: null })
+            }
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+        });
+
+        // ------------------ articles releted apis -----------------
+        
+
         /* read data for all Articles */
         app.get('/allArticles', async (req, res) => {
-            const result = await ArticlesCollection.find().toArray()
+            const result = await ArticlesCollection.find().skip(+req.query.offset).limit(10).toArray()
 
             res.send(result);
         })
-        
 
-        /* top 6 trending articles */
+        /* get single data using id */
+        app.get("/allArticles/:id", async (req, res) => {
+            const id = req.params.id
 
-        app.get('/topArticles', async (req, res) => {
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const result = await ArticlesCollection.findOne(query)
+            console.log(result);
+            res.send(result)
+
+        })
+
+        app.put('/allArticles/:id', async (req, res) => {
+            const { id } = req.params;
+
             try {
-                console.log('Request received for /topArticles');
+                const query = { _id: new ObjectId(id) };
+                const update = { $inc: { totalViews: 1 } }; 
 
-                // Find the top 6 articles based on totalViews in descending order
-                const topArticles = await ArticlesCollection.find({})
-                    .sort({ totalViews: -1 })
-                    .limit(6)
-                    .toArray()  
+                const result = await ArticlesCollection.updateOne(query, update);
 
-                console.log('Data retrieved successfully');
-                res.json(topArticles);
+                if (result.modifiedCount === 0) {
+                    return res.status(404).json({ error: 'Article not found' });
+                }
+
+                res.status(200).json({ message: 'View count updated successfully' });
             } catch (error) {
-                console.error('Error fetching data:', error);
-                res.status(500).send('Internal Server Error');
+                console.error('Error updating view count', error);
+                res.status(500).json({ error: 'Internal server error' });
             }
         });
+        
+
+
+
+        // ------------------ publishers releted apis -----------------
+        
+        /* read data for all Publishers */
+        app.get('/allPublishers', async (req, res) => {
+            const result = await allPublishersCollection.find().toArray()
+
+            res.send(result);
+        })
+
+
+
+       
+
+        
+
+        
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
