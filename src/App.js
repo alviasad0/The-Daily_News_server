@@ -170,12 +170,19 @@ async function run() {
 
             res.send(result);
         })
+
+
+
+
         /* read data for all Articles */
         app.get('/allArticlesData', async (req, res) => {
             const result = await ArticlesCollection.find().toArray()
 
             res.send(result);
         })
+
+
+
 
         /* get single data using id */
         app.get("/allArticles/:id", async (req, res) => {
@@ -225,6 +232,9 @@ async function run() {
                 res.status(500).json({ error: 'Internal server error' });
             }
         });
+
+
+
 
 
         /*serch and filter articles */
@@ -279,6 +289,8 @@ async function run() {
 
 
 
+
+          /*  new article added by the user  */
         app.post('/allArticles', async (req, res) => {
             try {
                 const { title, image_url, author, author_photoURL, publisher, tags,premium, description, status } = req.body;
@@ -305,7 +317,51 @@ async function run() {
             }
         });
 
+       
 
+
+        /* delete single users article by user   */
+
+        
+        app.delete('/allArticles/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id);
+            const query = { _id: new ObjectId(id) }  
+            const result = await ArticlesCollection.deleteOne(query)
+            console.log(result);
+            res.send(result);
+        })
+
+       
+
+        /* Update existing article by ID  by user */
+        app.put('/allArticles/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = {
+                _id: new ObjectId(id)
+            }
+            const newProduct = req.body
+            const options = {
+                upsert: true,
+            }
+            const updatedProduct = {
+                $set: {
+                    title: newProduct.title,
+                    author: newProduct.author,
+                    author_photoURL: newProduct.author_photoURL,
+                    image_url: newProduct.image_url,
+                    publisher: newProduct.publisher,
+                    tags: newProduct.tags,
+                    premium: newProduct.premium,
+                    description: newProduct.description,
+                    status: newProduct.status
+
+                }
+            }
+            const result = await ArticlesCollection.updateOne(filter, updatedProduct, options)
+            console.log(result);
+            res.send(result);
+        })
         // Get pending articles
         app.get('/pendingArticles', async (req, res) => {
             try {
@@ -316,6 +372,9 @@ async function run() {
                 res.status(500).json({ error: 'Internal server error' });
             }
         });
+
+
+
 
 
         // ------------------ publishers releted apis -----------------
