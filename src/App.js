@@ -78,6 +78,23 @@ async function run() {
             res.send(result);
         });
 
+          
+
+        /* get single user by id */
+        app.get("/users/:id", async (req, res) => {
+            const id = req.params.id
+
+            const query = {
+                _id: new ObjectId(id)
+            }
+            const result = await userCollection.findOne(query)
+            console.log(result);
+            res.send(result)
+
+        })
+
+
+
 
 
         /* update a single user  data */
@@ -88,18 +105,18 @@ async function run() {
                 _id: new ObjectId(id)
             }
             const newProduct = req.body
-            const options = {
-                upsert: true,
-            }
+           console.log(newProduct);
             const updatedProfile = {
                 $set: {
                     image_url: newProduct.image_url,
                     name: newProduct.name,
-
+                    role: newProduct.role,
+                    email: newProduct.email
 
                 }
             }
-            const result = await userCollection.updateOne(filter, updatedProfile, options)
+            console.log(updatedProfile);
+            const result = await userCollection.updateOne(filter, updatedProfile)
             console.log(result);
             res.send(result);
         })
@@ -205,6 +222,9 @@ async function run() {
             res.send(result)
 
         })
+
+
+
         /* update the total view in the articles */
         app.put('/allArticles/:id', async (req, res) => {
             const { id } = req.params;
