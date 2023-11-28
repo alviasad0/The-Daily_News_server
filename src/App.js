@@ -320,25 +320,6 @@ async function run() {
 
 
 
-          /*  new declined message send by the admin  */
-        app.post('/declinedMessages', async (req, res) => {
-            try {
-                const { article_id, response } = req.body;
-                console.log("Received Article Data:", req.body);
-
-                const declined_message = {
-                    article_id,
-                    response
-                };
-   console.log(declined_message);
-                const result = await declinedMessageCollection.insertOne(declined_message);
-
-                res.status(201).json({ message: 'Article added successfully', insertedId: result.insertedId });
-            } catch (error) {
-                console.error('Error adding article', error);
-                res.status(500).json({ error: 'Internal server error' });
-            }
-        });
 
        
 
@@ -413,7 +394,40 @@ async function run() {
 
 
 
+       /* ----------------------declined messsage releted apis ----------- */
 
+
+
+        /*  new declined message send by the admin  */
+        app.post('/declinedMessages', async (req, res) => {
+            try {
+                const { article_id, response } = req.body;
+                console.log("Received Article Data:", req.body);
+
+                const declined_message = {
+                    article_id,
+                    response
+                };
+                console.log(declined_message);
+                const result = await declinedMessageCollection.insertOne(declined_message);
+
+                res.status(201).json({ message: 'Article added successfully', insertedId: result.insertedId });
+            } catch (error) {
+                console.error('Error adding article', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+
+
+
+
+        /* read data for all declined message */
+        app.get('/declinedMessages', async (req, res) => {
+            const result = await declinedMessageCollection.find().toArray()
+
+            res.send(result);
+        })
 
 
 
