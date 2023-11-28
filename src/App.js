@@ -47,8 +47,11 @@ async function run() {
         const ArticlesCollection = client.db("allArticlesDB").collection("allArticles")
 
         const allPublishersCollection = client.db("allPublishersDB").collection("allPublishers")
-        
+
         const userCollection = client.db("allUsersDb").collection("allUsers");
+
+        const pendingArticlesCollection = client.db("pendingArticlesDB").collection("pendingArticles");
+        const myArticlesCollection = client.db("myArticlesDB").collection("myArticles");
 
 
 
@@ -60,12 +63,12 @@ async function run() {
             const result = await userCollection.find().toArray();
             res.send(result);
         });
-        
+
 
         /* sava new user data  */
         app.post('/users', async (req, res) => {
             const user = req.body;
-            
+
             const query = { email: user.email }
             const existingUser = await userCollection.findOne(query);
             if (existingUser) {
@@ -92,7 +95,7 @@ async function run() {
                 $set: {
                     image_url: newProduct.image_url,
                     name: newProduct.name,
-                    
+
 
                 }
             }
@@ -113,7 +116,7 @@ async function run() {
                     return res.status(404).json({ error: 'User not found' });
                 }
 
-                
+
                 const currentDate = new Date();
                 let subscriptionEndDate;
 
@@ -153,8 +156,13 @@ async function run() {
 
 
 
+
+
+
+
+
         // ------------------ articles releted apis -----------------
-        
+
 
         /* read data for all Articles */
         app.get('/allArticles', async (req, res) => {
@@ -175,13 +183,13 @@ async function run() {
             res.send(result)
 
         })
-       /* update the total view in the articles */
+        /* update the total view in the articles */
         app.put('/allArticles/:id', async (req, res) => {
             const { id } = req.params;
 
             try {
                 const query = { _id: new ObjectId(id) };
-                const update = { $inc: { totalViews: 1 } }; 
+                const update = { $inc: { totalViews: 1 } };
 
                 const result = await ArticlesCollection.updateOne(query, update);
 
@@ -197,7 +205,7 @@ async function run() {
         });
 
 
-         
+
         /* premium articles apis  */
         app.get('/premiumArticles', async (req, res) => {
             try {
@@ -212,9 +220,9 @@ async function run() {
             }
         });
 
-        
-    /*serch and filter articles */
-       
+
+        /*serch and filter articles */
+
         app.get('/searchArticles', async (req, res) => {
             try {
                 const { offset = 0, limit = 10, searchTitle, publisher, tags } = req.query;
@@ -242,8 +250,65 @@ async function run() {
 
 
 
+        // Approve a pending article
+        app.put('/approveArticle/:id', async (req, res) => {
+            const { id } = req.params;
 
-        
+            try {
+                const query = { _id: new ObjectId(id), status: 'pending' };
+                const update = { $set: { status: 'approved' } };
+
+                const result = await pendingArticlesCollection.updateOne(query, update);
+
+                if (result.modifiedCount === 0) {
+                    return res.status(404).json({ error: 'Pending article not found or already approved' });
+                }
+
+                res.status(200).json({ message: 'Article approved successfully' });
+            } catch (error) {
+                console.error('Error approving article', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+
+
+        app.post('/allArticles', async (req, res) => {
+            try {
+                const { title, image_url, publisher, tags, description, status } = req.body;
+                console.log("Received Article Data:", req.body);
+
+                const article = {
+                    title,
+                    image_url,
+                    publisher,
+                    tags,
+                    description,
+                    status,
+                };
+   console.log(article);
+                const result = await ArticlesCollection.insertOne(article);
+
+                res.status(201).json({ message: 'Article added successfully', insertedId: result.insertedId });
+            } catch (error) {
+                console.error('Error adding article', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+
+        // Get pending articles
+        app.get('/pendingArticles', async (req, res) => {
+            try {
+                const result = await pendingArticlesCollection.find().toArray();
+                res.send(result);
+            } catch (error) {
+                console.error('Error fetching pending articles', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+
         // ------------------ publishers releted apis -----------------
 
         /* read data for all Publishers */
@@ -255,11 +320,11 @@ async function run() {
 
 
 
-       
 
-        
 
-        
+
+
+
 
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
