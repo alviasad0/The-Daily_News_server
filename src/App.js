@@ -174,7 +174,7 @@ async function run() {
 
 
 
-        /* read data for all Articles */
+        /* read data for all Articles user */
         app.get('/allArticlesData', async (req, res) => {
             const result = await ArticlesCollection.find().toArray()
 
@@ -335,15 +335,12 @@ async function run() {
        
 
         /* Update existing article by ID  by user */
-        app.put('/allArticles/:id', async (req, res) => {
+        app.put('/allArticlesData/:id', async (req, res) => {
             const id = req.params.id
             const filter = {
                 _id: new ObjectId(id)
             }
             const newProduct = req.body
-            const options = {
-                upsert: true,
-            }
             const updatedProduct = {
                 $set: {
                     title: newProduct.title,
@@ -355,14 +352,19 @@ async function run() {
                     premium: newProduct.premium,
                     description: newProduct.description,
                     status: newProduct.status
-
                 }
             }
-            const result = await ArticlesCollection.updateOne(filter, updatedProduct, options)
-            console.log(result);
-            res.send(result);
+            try {
+                const result = await ArticlesCollection.updateOne(filter, updatedProduct);
+                console.log(result);
+                res.send(result);
+            } catch (error) {
+                console.error('Error updating article', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
         })
-        // Get pending articles
+
+        
         app.get('/pendingArticles', async (req, res) => {
             try {
                 const result = await pendingArticlesCollection.find().toArray();
