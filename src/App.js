@@ -51,7 +51,7 @@ async function run() {
         const userCollection = client.db("allUsersDb").collection("allUsers");
 
         const pendingArticlesCollection = client.db("pendingArticlesDB").collection("pendingArticles");
-        const myArticlesCollection = client.db("myArticlesDB").collection("myArticles");
+        const declinedMessageCollection = client.db("declinedMessageDB").collection("declinedMessage");
 
 
 
@@ -309,6 +309,29 @@ async function run() {
                 };
    console.log(article);
                 const result = await ArticlesCollection.insertOne(article);
+
+                res.status(201).json({ message: 'Article added successfully', insertedId: result.insertedId });
+            } catch (error) {
+                console.error('Error adding article', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+
+
+
+          /*  new declined message send by the admin  */
+        app.post('/declinedMessages', async (req, res) => {
+            try {
+                const { article_id, response } = req.body;
+                console.log("Received Article Data:", req.body);
+
+                const declined_message = {
+                    article_id,
+                    response
+                };
+   console.log(declined_message);
+                const result = await declinedMessageCollection.insertOne(declined_message);
 
                 res.status(201).json({ message: 'Article added successfully', insertedId: result.insertedId });
             } catch (error) {
