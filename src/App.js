@@ -170,6 +170,12 @@ async function run() {
 
             res.send(result);
         })
+        /* read data for all Articles */
+        app.get('/allArticlesData', async (req, res) => {
+            const result = await ArticlesCollection.find().toArray()
+
+            res.send(result);
+        })
 
         /* get single data using id */
         app.get("/allArticles/:id", async (req, res) => {
@@ -275,14 +281,17 @@ async function run() {
 
         app.post('/allArticles', async (req, res) => {
             try {
-                const { title, image_url, publisher, tags, description, status } = req.body;
+                const { title, image_url, author, author_photoURL, publisher, tags,premium, description, status } = req.body;
                 console.log("Received Article Data:", req.body);
 
                 const article = {
                     title,
+                    author , 
+                    author_photoURL,
                     image_url,
                     publisher,
                     tags,
+                    premium,
                     description,
                     status,
                 };
