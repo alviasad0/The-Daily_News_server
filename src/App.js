@@ -266,39 +266,20 @@ async function run() {
 
 
 
-        // Approve a pending article
-        app.put('/approveArticle/:id', async (req, res) => {
-            const { id } = req.params;
 
+
+
+
+
+        /*  new article added by the user  */
+        app.post('/allArticlesData', async (req, res) => {
             try {
-                const query = { _id: new ObjectId(id), status: 'pending' };
-                const update = { $set: { status: 'approved' } };
-
-                const result = await pendingArticlesCollection.updateOne(query, update);
-
-                if (result.modifiedCount === 0) {
-                    return res.status(404).json({ error: 'Pending article not found or already approved' });
-                }
-
-                res.status(200).json({ message: 'Article approved successfully' });
-            } catch (error) {
-                console.error('Error approving article', error);
-                res.status(500).json({ error: 'Internal server error' });
-            }
-        });
-
-
-
-
-          /*  new article added by the user  */
-        app.post('/allArticles', async (req, res) => {
-            try {
-                const { title, image_url, author, author_photoURL, publisher, tags,premium, description, status } = req.body;
+                const { title, image_url, author, author_photoURL, publisher, tags, premium, description, status } = req.body;
                 console.log("Received Article Data:", req.body);
 
                 const article = {
                     title,
-                    author , 
+                    author,
                     author_photoURL,
                     image_url,
                     publisher,
@@ -307,7 +288,7 @@ async function run() {
                     description,
                     status,
                 };
-   console.log(article);
+                console.log(article);
                 const result = await ArticlesCollection.insertOne(article);
 
                 res.status(201).json({ message: 'Article added successfully', insertedId: result.insertedId });
@@ -321,22 +302,22 @@ async function run() {
 
 
 
-       
+
 
 
         /* delete single users article by user   */
 
-        
+
         app.delete('/allArticles/:id', async (req, res) => {
             const id = req.params.id
             console.log(id);
-            const query = { _id: new ObjectId(id) }  
+            const query = { _id: new ObjectId(id) }
             const result = await ArticlesCollection.deleteOne(query)
             console.log(result);
             res.send(result);
         })
 
-       
+
 
         /* Update existing article by ID  by user */
         app.put('/allArticlesData/:id', async (req, res) => {
@@ -349,13 +330,15 @@ async function run() {
                 $set: {
                     title: newProduct.title,
                     author: newProduct.author,
-                    author_photoURL: newProduct.author_photoURL,
+                    author_photoURL : newProduct.author_photoURL,
                     image_url: newProduct.image_url,
-                    publisher: newProduct.publisher,
-                    tags: newProduct.tags,
-                    premium: newProduct.premium,
+                    premium : newProduct.premium,
+                    publisher : newProduct.publisher,
+                   
+                    tags : newProduct.tags,
                     description: newProduct.description,
-                    status: newProduct.status
+                    status: newProduct.status,
+
                 }
             }
             try {
@@ -367,8 +350,9 @@ async function run() {
                 res.status(500).json({ error: 'Internal server error' });
             }
         })
-
         
+
+
         app.get('/pendingArticles', async (req, res) => {
             try {
                 const result = await pendingArticlesCollection.find().toArray();
@@ -394,7 +378,7 @@ async function run() {
 
 
 
-       /* ----------------------declined messsage releted apis ----------- */
+        /* ----------------------declined messsage releted apis ----------- */
 
 
 
