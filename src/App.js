@@ -181,7 +181,16 @@ async function run() {
             res.send(result);
         })
 
-
+        /* delete a article  */
+        app.delete('/allArticlesData/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id);
+            const query = { _id:new ObjectId(id) }
+            const result = await ArticlesCollection.deleteOne(query)
+            console.log(result);
+            res.send(result);
+        }
+        )
 
 
         /* get single data using id */
@@ -274,14 +283,14 @@ async function run() {
         /*  new article added by the user  */
         app.post('/allArticlesData', async (req, res) => {
             try {
-                const { title, image_url, author, author_photoURL, publisher, tags, premium, description, status } = req.body;
+                const { title, image, author, author_photoURL, publisher, tags, premium, description, status } = req.body;
                 console.log("Received Article Data:", req.body);
 
                 const article = {
                     title,
                     author,
                     author_photoURL,
-                    image_url,
+                    image,
                     publisher,
                     tags,
                     premium,
@@ -311,7 +320,7 @@ async function run() {
         app.delete('/allArticles/:id', async (req, res) => {
             const id = req.params.id
             console.log(id);
-            const query = { _id: new ObjectId(id) }
+            const query = { _id:new ObjectId(id) }
             const result = await ArticlesCollection.deleteOne(query)
             console.log(result);
             res.send(result);
@@ -331,7 +340,7 @@ async function run() {
                     title: newProduct.title,
                     author: newProduct.author,
                     author_photoURL : newProduct.author_photoURL,
-                    image_url: newProduct.image_url,
+                    image: newProduct.image,
                     premium : newProduct.premium,
                     publisher : newProduct.publisher,
                    
