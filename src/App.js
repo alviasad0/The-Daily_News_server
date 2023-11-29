@@ -422,6 +422,33 @@ async function run() {
 
 
 
+         /*  new publisher send by the admin  */
+        app.post('/allPublishers', async (req, res) => {
+            try {
+                const { name,
+                    image,
+                    description,
+                    website,
+                    tags } = req.body;
+                console.log("Received Article Data:", req.body);
+
+                const newPublisher = {
+                    name, image, description,tags , website
+                };
+                console.log(newPublisher);
+                const result = await allPublishersCollection.insertOne(newPublisher);
+
+                res.status(201).json({ message: 'Publisher added successfully', insertedId: result.insertedId });
+            } catch (error) {
+                console.error('Error adding article', error);
+                res.status(500).json({ error: 'Internal server error' });
+            }
+        });
+
+
+
+
+
         /* ----------------------declined messsage releted apis ----------- */
 
 
