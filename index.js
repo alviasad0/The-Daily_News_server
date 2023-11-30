@@ -1,6 +1,7 @@
 const express = require("express");
-const globalErrorHandler = require("./utils/globalErrorHandle");
-const applyMiddleware = require("./middlewares/applyMiddleware");
+const cors = require('cors');
+
+
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 
@@ -14,10 +15,15 @@ const port = process.env.PORT || 5000;
 
 
 
-/* apply middlewares */
+/* middleware */
 
-applyMiddleware(app);
+app.use(cors({
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+}));
 
+app.use(express.json());
 
 
 
@@ -111,8 +117,8 @@ async function run() {
                     image_url: newProduct.image_url,
                     name: newProduct.name,
                     role: newProduct.role,
-                    email: newProduct.email
-
+                    email: newProduct.email,
+                    premiumTaken: newProduct.premiumTaken
                 }
             }
             console.log(updatedProfile);
@@ -159,8 +165,8 @@ async function run() {
                     case '5days':
                         subscriptionEndDate = new Date(currentDate.getTime() + 5 * 24 * 60 * 60 * 1000);
                         break;
-                    case '1week':
-                        subscriptionEndDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+                    case '10days':
+                        subscriptionEndDate = new Date(currentDate.getTime() + 10 * 24 * 60 * 60 * 1000);
                         break;
                     case '1month':
                         subscriptionEndDate = new Date(currentDate);
@@ -181,7 +187,6 @@ async function run() {
                 res.status(500).json({ error: 'Internal server error' });
             }
         });
-
 
 
 
@@ -318,7 +323,7 @@ async function run() {
         /*  new article added by the user  */
         app.post('/allArticlesData', async (req, res) => {
             try {
-                const { title, image, author, author_photoURL, publisher, tags, premium, description, status } = req.body;
+                const { title, image, author, author_photoURL, publisher, tags, premium, description, status, posting_date } = req.body;
                 console.log("Received Article Data:", req.body);
 
                 const article = {
@@ -331,6 +336,7 @@ async function run() {
                     premium,
                     description,
                     status,
+                    posting_date
                 };
                 console.log(article);
                 const result = await ArticlesCollection.insertOne(article);
@@ -510,8 +516,11 @@ app.all("*", (req, res, next) => {
     next(error);
 });
 
-/*  error handling middleware*/
-app.use(globalErrorHandler);
+// /*  error handling middleware*/
+// app.status(err.status || 500).json({
+//     message: err.message,
+//     errors: err.errors,
+// });
 
 
 const main = async () => {
